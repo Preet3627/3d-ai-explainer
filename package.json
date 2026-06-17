@@ -18,6 +18,11 @@
     "models:download": "bash scripts/download-models.sh"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.85",
+    "@ai-sdk/google": "^3.0.83",
+    "@ai-sdk/groq": "^3.0.42",
+    "@ai-sdk/openai": "^3.0.72",
+    "ai": "^6.0.207",
     "dotenv": "^17.4.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

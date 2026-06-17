@@ -21,8 +21,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
 
   // AI Explanation
-  requestExplanation: (data: { text: string; context: string; provider: string }) =>
+  requestExplanation: (data: { text: string; context?: string; history?: { role: 'user' | 'assistant'; content: string }[] }) =>
     ipcRenderer.invoke('ai:explain', data),
+
+  // Settings
+  getSettings: () =>
+    ipcRenderer.invoke('settings:get'),
+  setSettings: (updates: Record<string, unknown>) =>
+    ipcRenderer.invoke('settings:set', updates),
 
   // Model conversion (2D → 3D via Python backend)
   convertImageTo3D: (imagePath: string) =>

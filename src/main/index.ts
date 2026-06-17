@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import PythonBridge from './pythonBridge';
 import ModelManager from './modelManager';
 import DeepgramClient from './deepgramClient';
+import SettingsStore from './settingsStore';
+import { generateAIResponse } from './aiProvider';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -14,6 +16,7 @@ if (process.platform === 'darwin') {
 }
 
 let mainWindow: BrowserWindow | null = null;
+let settingsStore: SettingsStore;
 const pythonBridge = new PythonBridge();
 const modelManager = new ModelManager();
 const deepgram = new DeepgramClient();
@@ -71,10 +74,35 @@ ipcMain.handle('python:status', async () => {
 
 // ─── STT (Speech-To-Text) IPC ──────────────────────────────────────
 
+// ─── Settings IPC ──────────────────────────────────────────────────
+
+ipcMain.handle('settings:get', () => {
+  return settingsStore.getAll();
+});
+
+ipcMain.handle('settings:set', (_event, updates: Record<string, unknown>) => {
+  settingsStore.setAll(updates as any);
+  return { success: true };
+});
+
+// ─── AI Explanation IPC ────────────────────────────────────────────
+
+ipcMain.handle('ai:explain', async (_event, data: { text: string; context?: string; history?: { role: 'user' | 'assistant'; content: string }[] }) => {
+  try {
+    const settings = settingsStore.getAll();
+    const text = await generateAIResponse(settings, data.text, data.context, data.history);
+    return { success: true, text };
+  } catch (err) {
+    return { success: false, error: (err as Error).message };
+  }
+});
+
+// ─── STT (Speech-To-Text) IPC ──────────────────────────────────────
+
 ipcMain.on('stt:start', () => {
-  const apiKey = process.env.DEEPGRAM_API_KEY;
+  const apiKey = settingsStore.get('deepgramApiKey') || process.env.DEEPGRAM_API_KEY || '';
   if (!apiKey) {
-    mainWindow?.webContents.send('stt:error', 'DEEPGRAM_API_KEY not configured');
+    mainWindow?.webContents.send('stt:error', 'DEEPGRAM_API_KEY not configured — add it in Settings');
     return;
   }
 
@@ -97,6 +125,7 @@ ipcMain.on('stt:stop', () => {
 // ─── App lifecycle ─────────────────────────────────────────────────
 
 app.whenReady().then(async () => {
+  settingsStore = new SettingsStore();
   createWindow();
   try {
     await pythonBridge.start();

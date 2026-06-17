@@ -21,7 +21,9 @@ interface ElectronAPI {
   onSTTError: (callback: (error: string) => void) => void;
   onSTTReady: (callback: () => void) => void;
   removeSTTListeners: () => void;
-  requestExplanation: (data: { text: string; context: string; provider: string }) => Promise<string>;
+  requestExplanation: (data: { text: string; context?: string; history?: { role: 'user' | 'assistant'; content: string }[] }) => Promise<{ success: boolean; text?: string; error?: string }>;
+  getSettings: () => Promise<Record<string, unknown>>;
+  setSettings: (updates: Record<string, unknown>) => Promise<{ success: boolean }>;
   convertImageTo3D: (imagePath: string) => Promise<{ success: boolean; modelPath?: string; error?: string }>;
   textToImageTo3D: (prompt: string) => Promise<{ success: boolean; modelPath?: string; error?: string }>;
   listModels: () => Promise<ModelInfo[]>;
