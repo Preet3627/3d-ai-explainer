@@ -33,6 +33,29 @@ else
   echo "TripoSR model already present, skipping."
 fi
 
+# ─── Stable Diffusion ────────────────────────────────────────────────
+echo ""
+echo "Checking Stable Diffusion model..."
+SD_CACHE="$HOME/.cache/huggingface/hub/models--runwayml--stable-diffusion-v1-5"
+if [ ! -d "$SD_CACHE" ]; then
+  echo "Downloading Stable Diffusion v1.5 (~2GB from HuggingFace)..."
+  if [ -d "$VENV_DIR" ]; then
+    source "$VENV_DIR/bin/activate"
+    python -c "
+from diffusers import StableDiffusionPipeline
+print('Downloading Stable Diffusion v1.5 (this downloads ~2GB and may take a while)...')
+pipe = StableDiffusionPipeline.from_pretrained('runwayml/stable-diffusion-v1-5')
+print('Stable Diffusion downloaded successfully.')
+" 2>&1 | tail -5
+  else
+    echo "Error: Python venv not found. Run setup-python.sh first."
+    exit 1
+  fi
+  echo "Stable Diffusion model downloaded."
+else
+  echo "Stable Diffusion model already cached, skipping."
+fi
+
 echo ""
 echo "=== Model weights ready ==="
 ls -lh "$MODELS_DIR"

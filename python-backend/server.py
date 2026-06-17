@@ -116,6 +116,11 @@ async def text_to_image(req: TextToImageRequest):
     image_id = uuid.uuid4().hex
     output_path = UPLOAD_DIR / f"{image_id}.png"
 
+    sd_cache = Path.home() / ".cache" / "huggingface" / "hub" / "models--runwayml--stable-diffusion-v1-5"
+    if not sd_cache.exists():
+        raise HTTPException(503, "Stable Diffusion model not downloaded. "
+            "Run 'bash scripts/download-models.sh' to download it (requires ~2GB).")
+
     try:
         _text_to_image(req.prompt, output_path)
     except Exception as e:
@@ -133,6 +138,12 @@ async def text_to_image_to_3d(req: TextTo3DRequest):
     """Composite: text → image → 3D. Returns GLB model path."""
     image_id = uuid.uuid4().hex
     image_path = UPLOAD_DIR / f"{image_id}.png"
+
+    # Check SD is cached before running (avoid downloading 2GB during request)
+    sd_cache = Path.home() / ".cache" / "huggingface" / "hub" / "models--runwayml--stable-diffusion-v1-5"
+    if not sd_cache.exists():
+        raise HTTPException(503, "Stable Diffusion model not downloaded. "
+            "Run 'bash scripts/download-models.sh' to download it (requires ~2GB).")
 
     try:
         _text_to_image(req.prompt, image_path)
