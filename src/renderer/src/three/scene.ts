@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { applyModelToScene } from './modelLoader';
+import AnnotationSystem from './annotationSystem';
 
 class SceneManager {
   private scene: THREE.Scene;
@@ -14,6 +15,8 @@ class SceneManager {
   private startTime: number;
   private objects: THREE.Object3D[] = [];
   private modelLoadCallbacks: Array<(path: string) => void> = [];
+  private annotations: AnnotationSystem;
+  private hasModel = false;
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -50,6 +53,8 @@ class SceneManager {
 
     this.resizeObserver = new ResizeObserver(() => this.onResize());
     this.resizeObserver.observe(container);
+
+    this.annotations = new AnnotationSystem(this.scene, this.camera, this.renderer);
 
     this.animationId = requestAnimationFrame(() => this.animate());
   }
@@ -153,6 +158,7 @@ class SceneManager {
   }
 
   async loadModel(path: string, onProgress?: (ratio: number) => void): Promise<void> {
+    this.annotations.clearAll();
     if (this.cube) {
       this.scene.remove(this.cube);
       this.cube.geometry.dispose();
@@ -161,11 +167,25 @@ class SceneManager {
     }
     this.controls.autoRotate = true;
     await applyModelToScene(path, this.scene, onProgress);
+    this.hasModel = true;
     this.modelLoadCallbacks.forEach((cb) => cb(path));
+  }
+
+  annotateExplanation(text: string): void {
+    if (!this.hasModel) return;
+    this.annotations.clearAll();
+    this.annotations.highlightModel(0x00ccff, 0.8);
+    this.annotations.showLabel(text);
+    this.annotations.startSpotlight();
+  }
+
+  clearAnnotations(): void {
+    this.annotations.clearAll();
   }
 
   dispose(): void {
     cancelAnimationFrame(this.animationId);
+    this.annotations.dispose();
     this.resizeObserver.disconnect();
     this.controls.dispose();
     this.renderer.dispose();

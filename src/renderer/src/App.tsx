@@ -4,6 +4,7 @@ import VoiceBar from './components/VoiceBar';
 import SettingsPanel from './components/SettingsPanel';
 import ChatOverlay from './components/ChatOverlay';
 import { SettingsProvider } from './context/SettingsContext';
+import { speak } from './voice/tts';
 
 function AppContent() {
   const canvasRef = useRef<ThreeCanvasHandle>(null);
@@ -17,6 +18,30 @@ function AppContent() {
     if (ratio >= 1) {
       setTimeout(() => setLoadProgress(null), 500);
     }
+  }, []);
+
+  const handleAIExplanation = useCallback(async (text: string) => {
+    setStatus('AI is thinking...');
+    try {
+      const result = await window.electronAPI.requestExplanation({ text });
+      if (result.success && result.text) {
+        setStatus(result.text.slice(0, 60) + (result.text.length > 60 ? '...' : ''));
+        canvasRef.current?.annotateExplanation(result.text);
+        speak(result.text);
+      } else {
+        setStatus(`Error: ${result.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      setStatus(`Error: ${(err as Error).message}`);
+    }
+  }, []);
+
+  const handleVoiceTranscript = useCallback((text: string) => {
+    handleAIExplanation(text);
+  }, [handleAIExplanation]);
+
+  const handleChatResponse = useCallback((text: string) => {
+    canvasRef.current?.annotateExplanation(text);
   }, []);
 
   const handleConvert = useCallback(async () => {
@@ -79,8 +104,8 @@ function AppContent() {
             <span className="text-xs text-gray-500">{Math.round(loadProgress * 100)}%</span>
           </div>
         )}
-        <span className="text-xs text-gray-500">{status}</span>
-        <ChatOverlay />
+        <span className="text-xs text-gray-500 max-w-64 truncate">{status}</span>
+        <ChatOverlay onAIResponse={handleChatResponse} />
         <button
           onClick={() => setShowSettings(true)}
           className="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors"
@@ -108,7 +133,7 @@ function AppContent() {
             Text → 3D
           </button>
         </div>
-        <VoiceBar />
+        <VoiceBar onTranscriptFinal={handleVoiceTranscript} />
       </main>
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
     </div>

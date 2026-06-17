@@ -1,8 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { startMicrophoneCapture, MicStopFn } from '../voice/microphone';
-import { speak, stopSpeaking } from '../voice/tts';
 
-type VoiceState = 'idle' | 'connecting' | 'recording' | 'speaking' | 'error';
+type VoiceState = 'idle' | 'connecting' | 'recording' | 'processing' | 'speaking' | 'error';
+
+export interface VoiceBarProps {
+  onTranscriptFinal?: (text: string) => void;
+}
 
 function waitForSTTReady(): Promise<void> {
   return new Promise((resolve) => {
@@ -10,7 +13,7 @@ function waitForSTTReady(): Promise<void> {
   });
 }
 
-function VoiceBar() {
+function VoiceBar({ onTranscriptFinal }: VoiceBarProps) {
   const [state, setState] = useState<VoiceState>('idle');
   const [interim, setInterim] = useState('');
   const [transcript, setTranscript] = useState('');
@@ -33,7 +36,6 @@ function VoiceBar() {
   const toggleMic = useCallback(async () => {
     if (state === 'recording' || state === 'connecting') {
       cleanup();
-      stopSpeaking();
       setState('idle');
       setError('');
       return;
@@ -89,20 +91,39 @@ function VoiceBar() {
   useEffect(() => {
     return () => {
       cleanup();
-      stopSpeaking();
     };
   }, [cleanup]);
 
-  const handleSpeak = useCallback(() => {
-    if (!transcriptRef.current) return;
-    setState('speaking');
-    speak(transcriptRef.current, () => {
-      if (mountedRef.current) setState('idle');
-    });
+  const handleSpeak = useCallback(async () => {
+    const text = transcriptRef.current;
+    if (!text) return;
+    setState('processing');
+    onTranscriptFinal?.(text);
+    setState('idle');
+  }, [onTranscriptFinal]);
+
+  const handleStopSpeaking = useCallback(() => {
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+    }
+    setState('idle');
   }, []);
+
+  useEffect(() => {
+    if (state === 'speaking') {
+      const checkSpeaking = setInterval(() => {
+        if (!window.speechSynthesis.speaking && mountedRef.current) {
+          setState((prev) => prev === 'speaking' ? 'idle' : prev);
+          clearInterval(checkSpeaking);
+        }
+      }, 200);
+      return () => clearInterval(checkSpeaking);
+    }
+  }, [state]);
 
   const micColor = state === 'recording' ? 'bg-red-600 hover:bg-red-500'
     : state === 'connecting' ? 'bg-yellow-500'
+    : state === 'processing' ? 'bg-yellow-500'
     : state === 'speaking' ? 'bg-green-500'
     : state === 'error' ? 'bg-red-800'
     : 'bg-gray-700 hover:bg-gray-600';
@@ -142,14 +163,26 @@ function VoiceBar() {
           </svg>
         </button>
 
-        {transcript && state !== 'speaking' && (
+        {transcript && state !== 'processing' && state !== 'speaking' && (
           <button
             onClick={handleSpeak}
-            className="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors"
-            title="Read transcript aloud"
+            className="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center transition-colors"
+            title="Explain with AI"
           >
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8.5v7a4.49 4.49 0 0 0 2.5-3.5z" />
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+            </svg>
+          </button>
+        )}
+
+        {state === 'speaking' && (
+          <button
+            onClick={handleStopSpeaking}
+            className="w-10 h-10 rounded-full bg-red-600 hover:bg-red-500 flex items-center justify-center transition-colors"
+            title="Stop"
+          >
+            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 6h12v12H6z" />
             </svg>
           </button>
         )}

@@ -4,6 +4,7 @@
 **Phase 1 completed:** 2026-06-17  
 **Phase 2 completed:** 2026-06-17  
 **Phase 3 completed:** 2026-06-17
+**Phase 4 completed:** 2026-06-17
 
 **Legend:**
 - ✅ Done
@@ -73,16 +74,16 @@
 
 | ID | Task | Status | Depends On |
 |---|---|---|---|
-| 4.1 | Vercel AI SDK multi-provider router | ❌ | 1.1 |
-| 4.2 | Ollama client integration | ❌ | 4.1 |
-| 4.3 | OpenAI provider integration | ❌ | 4.1 |
-| 4.4 | Anthropic (Claude) provider integration | ❌ | 4.1 |
-| 4.5 | Google (Gemini) provider integration | ❌ | 4.1 |
-| 4.6 | Groq provider integration | ❌ | 4.1 |
-| 4.7 | xAI (Grok) provider integration | ❌ | 4.1 |
-| 4.8 | Explanation prompt template with scene context | ❌ | 4.1 |
-| 4.9 | ProviderSelector component (UI dropdown) | ❌ | 1.2 |
-| 4.10 | Explanation history / chat log | ❌ | 4.1 |
+| 4.1 | Vercel AI SDK multi-provider router | ✅ | 1.1 |
+| 4.2 | Ollama client integration | ✅ | 4.1 |
+| 4.3 | OpenAI provider integration | ✅ | 4.1 |
+| 4.4 | Anthropic (Claude) provider integration | ✅ | 4.1 |
+| 4.5 | Google (Gemini) provider integration | ✅ | 4.1 |
+| 4.6 | Groq provider integration | ✅ | 4.1 |
+| 4.7 | xAI (Grok) provider integration | ✅ | 4.1 |
+| 4.8 | Explanation prompt template with scene context | ✅ | 4.1 |
+| 4.9 | ProviderSelector component (UI dropdown) | ✅ | 1.2 |
+| 4.10 | Explanation history / chat log | ✅ | 4.1 |
 
 ### Verification: Select provider, ask "what is this object?" → AI explains → TTS reads it
 
@@ -140,12 +141,12 @@
 ## Summary
 
 | Phase | Total Tasks | ✅ Done | 🔄 In Progress | ❌ Not Started |
-|---|---|---|---|---|
+|---|---|---|---|---|---|
 | P1: Scaffold & 3D | 10 | 10 | 0 | 0 |
 | P2: Python Backend | 10 | 10 | 0 | 0 |
 | P3: Voice | 9 | 6 | 0 | 3 |
-| P4: AI Explanations | 10 | 0 | 0 | 10 |
+| P4: AI Explanations | 10 | 10 | 0 | 0 |
 | P5: Annotations | 8 | 0 | 0 | 8 |
 | P6: UI & Packaging | 10 | 0 | 0 | 10 |
 | P7: Testing | 6 | 0 | 0 | 6 |
-| **Total** | **63** | **26** | **0** | **37** |
+| **Total** | **63** | **36** | **0** | **27** |

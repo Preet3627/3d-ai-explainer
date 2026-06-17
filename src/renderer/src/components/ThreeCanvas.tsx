@@ -8,6 +8,8 @@ export interface ThreeCanvasProps {
 
 export interface ThreeCanvasHandle {
   loadModel: (path: string) => Promise<void>;
+  annotateExplanation: (text: string) => void;
+  clearAnnotations: () => void;
 }
 
 const VALID_EXTENSIONS = ['.glb', '.gltf'];
@@ -19,6 +21,8 @@ const ThreeCanvas = forwardRef<ThreeCanvasHandle, ThreeCanvasProps>((props, ref)
 
   useImperativeHandle(ref, () => ({
     loadModel: (path: string) => sceneRef.current?.loadModel(path, props.onLoadProgress) ?? Promise.resolve(),
+    annotateExplanation: (text: string) => sceneRef.current?.annotateExplanation(text),
+    clearAnnotations: () => sceneRef.current?.clearAnnotations(),
   }));
 
   useEffect(() => {

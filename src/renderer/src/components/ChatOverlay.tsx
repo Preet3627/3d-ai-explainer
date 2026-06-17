@@ -8,7 +8,11 @@ interface ChatMessage {
   timestamp: number;
 }
 
-function ChatOverlay() {
+interface ChatOverlayProps {
+  onAIResponse?: (text: string) => void;
+}
+
+function ChatOverlay({ onAIResponse }: ChatOverlayProps) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -43,6 +47,7 @@ function ChatOverlay() {
       if (result.success && result.text) {
         const aiMsg: ChatMessage = { role: 'assistant', content: result.text, timestamp: Date.now() };
         setMessages((prev) => [...prev, aiMsg]);
+        onAIResponse?.(result.text);
       } else {
         const errMsg: ChatMessage = { role: 'assistant', content: `Error: ${result.error || 'Unknown error'}`, timestamp: Date.now() };
         setMessages((prev) => [...prev, errMsg]);
@@ -52,7 +57,7 @@ function ChatOverlay() {
       setMessages((prev) => [...prev, errMsg]);
     }
     setLoading(false);
-  }, [input, loading, messages, modelContext]);
+  }, [input, loading, messages, modelContext, onAIResponse]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
