@@ -2,7 +2,7 @@
   "name": "3d-ai-explainer",
   "version": "0.1.0",
   "description": "Desktop app: 3D visualization with AI voice explanations. 2D image to 3D model generation with real-time voice interaction.",
-  "main": "electron/main.js",
+  "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
@@ -16,37 +16,29 @@
     "python:server": "cd python-backend && uvicorn server:app --host 127.0.0.1 --port 8765 --reload",
     "models:download": "bash scripts/download-models.sh"
   },
-  "dependencies": {
-    "ai": "^4.0.0",
-    "@ai-sdk/openai": "^1.0.0",
-    "@ai-sdk/anthropic": "^1.0.0",
-    "@ai-sdk/google": "^1.0.0",
-    "@ai-sdk/groq": "^1.0.0",
-    "@ai-sdk/xai": "^1.0.0",
-    "@deepgram/sdk": "^3.0.0",
-    "three": "^0.170.0",
-    "dotenv": "^16.4.0"
-  },
-  "devDependencies": {
-    "electron": "^33.0.0",
-    "electron-vite": "^2.0.0",
-    "electron-builder": "^25.0.0",
-    "typescript": "^5.5.0",
-    "@types/three": "^0.170.0",
-    "vite": "^6.0.0",
+    "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.170.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "electron-vite": "^2.0.0",
     "tailwindcss": "^4.0.0",
-    "eslint": "^9.0.0"
+    "typescript": "^5.5.0",
+    "vite": "^5.0.0"
   },
   "build": {
     "appId": "com.aiexplainer.app",
     "productName": "3D AI Explainer",
     "files": [
-      "dist/**/*",
-      "electron/**/*"
+      "out/**/*"
     ],
     "mac": {
       "target": ["dmg", "zip"],

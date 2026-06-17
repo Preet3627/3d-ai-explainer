@@ -1,6 +1,7 @@
 # Project TODO
 
-**Last updated:** 2026-06-17
+**Last updated:** 2026-06-17  
+**Phase 1 completed:** 2026-06-17
 
 **Legend:**
 - ✅ Done
@@ -13,19 +14,19 @@
 ## Phase 1: Scaffold & 3D Viewport
 
 | ID | Task | Status | Depends On |
-|---|---|---|---|
-| 1.1 | Initialize Electron + TypeScript + Vite project | ❌ | – |
-| 1.2 | Set up React + Tailwind in renderer | ❌ | 1.1 |
-| 1.3 | Create Three.js scene (scene, camera, renderer) | ❌ | 1.2 |
-| 1.4 | Add OrbitControls (rotate, pan, zoom) | ❌ | 1.3 |
-| 1.5 | Add environment lighting (ambient, directional, HDR) | ❌ | 1.4 |
+|---|---|---|---|---|
+| 1.1 | Initialize Electron + TypeScript + Vite project | ✅ | – |
+| 1.2 | Set up React + Tailwind in renderer | ✅ | 1.1 |
+| 1.3 | Create Three.js scene (scene, camera, renderer) | ✅ | 1.2 |
+| 1.4 | Add OrbitControls (rotate, pan, zoom) | ✅ | 1.3 |
+| 1.5 | Add environment lighting (ambient, directional, HDR) | ✅ | 1.4 |
 | 1.6 | Implement glTF/GLB model loader with progress bar | ❌ | 1.5 |
-| 1.7 | Create responsive ThreeCanvas React component | ❌ | 1.3 |
-| 1.8 | Add grid helper + axis helper | ❌ | 1.4 |
-| 1.9 | Auto-rotation toggle | ❌ | 1.6 |
-| 1.10 | Render a sample cube as placeholder | ❌ | 1.2 |
+| 1.7 | Create responsive ThreeCanvas React component | ✅ | 1.3 |
+| 1.8 | Add grid helper + axis helper | ✅ | 1.4 |
+| 1.9 | Auto-rotation toggle | ✅ | 1.6 |
+| 1.10 | Render a sample cube as placeholder | ✅ | 1.2 |
 
-### Verification: `npm run dev` shows a 3D viewport with a rotating cube
+### Verification: `npm run dev` shows a 3D viewport with a rotating cube ✅
 
 ---
 
@@ -138,11 +139,11 @@
 
 | Phase | Total Tasks | ✅ Done | 🔄 In Progress | ❌ Not Started |
 |---|---|---|---|---|
-| P1: Scaffold & 3D | 10 | 0 | 0 | 10 |
+| P1: Scaffold & 3D | 10 | 9 | 0 | 1 |
 | P2: Python Backend | 10 | 0 | 0 | 10 |
 | P3: Voice | 9 | 0 | 0 | 9 |
 | P4: AI Explanations | 10 | 0 | 0 | 10 |
 | P5: Annotations | 8 | 0 | 0 | 8 |
 | P6: UI & Packaging | 10 | 0 | 0 | 10 |
 | P7: Testing | 6 | 0 | 0 | 6 |
-| **Total** | **63** | **0** | **0** | **63** |
+| **Total** | **63** | **9** | **0** | **54** |
