@@ -302,6 +302,84 @@ Automated via GitHub Actions. Pushing a `v*` tag triggers:
 
 ---
 
+## Troubleshooting
+
+### Text → 3D fails with "cannot reshape tensor of 0 elements"
+
+**Cause:** Stable Diffusion model not downloaded. The text-to-3D pipeline silently falls back to a dummy image when SD is missing, which TripoSR can't process.
+
+**Fix:**
+```bash
+# Ensure Python deps are up to date
+source python-backend/venv/bin/activate
+pip install --upgrade huggingface-hub transformers tokenizers diffusers
+
+# Download SD v1.5 (~2GB)
+bash scripts/download-models.sh
+
+# Restart Python server
+npm run python:server
+```
+
+### Python import errors after setup
+
+If you see errors like `ImportError: cannot import name 'HF_HOME'`, your Python dependencies are out of sync:
+
+```bash
+source python-backend/venv/bin/activate
+pip install --upgrade -r python-backend/requirements.txt
+```
+
+### macOS: "app is damaged" or "cannot be opened"
+
+```bash
+sudo xattr -rd com.apple.quarantine /Applications/3D\ AI\ Explainer.app
+```
+
+### Deepgram voice features not working
+
+1. Open Settings → API Keys and paste your Deepgram API key
+2. Ensure the key is active in the [Deepgram Console](https://console.deepgram.com)
+3. Check the header — the Python backend dot should be green (backend running)
+
+### Python backend fails to start
+
+Check that port 8765 isn't in use:
+```bash
+lsof -i :8765
+kill -9 <PID>   # If something is blocking it
+```
+
+Then restart:
+```bash
+npm run python:server
+```
+
+### TripoSR checkpoint not found
+
+```bash
+bash scripts/download-models.sh
+```
+
+This downloads `model.ckpt` (1.6GB) and `config.yaml` to `python-backend/models/`.
+
+### GPU out of memory
+
+TripoSR requires ~4GB VRAM. On Apple Silicon (M1/M2/M3), MPS is used automatically. If you run out of memory:
+
+- Close other GPU-intensive apps
+- Reduce `resolution=256` in `triposr_worker.py` to `128`
+
+### Electron app shows white screen on startup
+
+```bash
+# Clear Electron cache
+rm -rf ~/Library/Application\ Support/3d-ai-explainer/
+npm run dev
+```
+
+---
+
 ## License
 
 Copyright 2026 Latestinssan — Apache 2.0
