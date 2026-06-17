@@ -1,0 +1,121 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. v0.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: mac
+            artifact-name: mac
+          - os: windows-latest
+            target: win
+            artifact-name: win
+          - os: ubuntu-latest
+            target: linux
+            artifact-name: linux
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build ${{ matrix.target }}
+        run: npm run package:${{ matrix.target }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.artifact-name }}
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/*.exe
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.yml
+            dist/*.blockmap
+          if-no-files-found: warn
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-*
+          merge-multiple: true
+          path: dist/
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          NOTES=$(cat <<'EOF'
+          ## 3D AI Explainer
+
+          ### What's new
+          - 3D viewport with OrbitControls, PBR lighting, and GLB model loading
+          - Drag-and-drop GLB/GLTF files onto the viewport
+          - 2D image to 3D model conversion via TripoSR (local GPU)
+          - Text-to-3D generation pipeline (Stable Diffusion + TripoSR)
+          - Real-time speech-to-text via Deepgram (Nova-2)
+          - Text-to-speech via Web Speech API (local OS voices)
+          - Voice interaction bar with live transcription
+          - Cross-platform builds (macOS, Windows, Linux)
+
+          ### Prerequisites
+          - Python 3.10+ with PyTorch (see setup guide)
+          - Deepgram API key for voice features
+          - See README.md for full setup instructions
+          EOF
+          )
+          echo "notes<<DELIM" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "DELIM" >> $GITHUB_OUTPUT
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "name=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: ${{ steps.tag.outputs.name }}
+          body: ${{ steps.notes.outputs.notes }}
+          files: dist/**
+          draft: false
+          prerelease: false

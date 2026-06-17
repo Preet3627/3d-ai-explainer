@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 PYTHON_DIR="$PROJECT_DIR/python-backend"
 MODELS_DIR="$PYTHON_DIR/models"
+VENV_DIR="$PYTHON_DIR/venv"
 
 mkdir -p "$MODELS_DIR"
 
@@ -12,32 +13,24 @@ echo "=== Downloading AI model weights ==="
 echo "Output directory: $MODELS_DIR"
 
 # ─── TripoSR ───────────────────────────────────────────────────────
-TRIPOSR_URL="https://huggingface.co/stabilityai/TripoSR/resolve/main/model.ckpt"
-TRIPOSR_PATH="$MODELS_DIR/triposr.ckpt"
-
-if [ ! -f "$TRIPOSR_PATH" ]; then
-  echo "Downloading TripoSR weights (494MB)..."
-  if command -v curl &> /dev/null; then
-    curl -L -o "$TRIPOSR_PATH" "$TRIPOSR_URL"
-  elif command -v wget &> /dev/null; then
-    wget -O "$TRIPOSR_PATH" "$TRIPOSR_URL"
+if [ ! -f "$MODELS_DIR/model.ckpt" ]; then
+  echo "Downloading TripoSR model (1.6GB from HuggingFace)..."
+  if [ -d "$VENV_DIR" ]; then
+    source "$VENV_DIR/bin/activate"
+    python -c "
+from huggingface_hub import hf_hub_download
+path = hf_hub_download('stabilityai/TripoSR', 'model.ckpt', local_dir='$MODELS_DIR')
+config = hf_hub_download('stabilityai/TripoSR', 'config.yaml', local_dir='$MODELS_DIR')
+print(f'Model: {path}')
+print(f'Config: {config}')
+"
   else
-    echo "Error: Neither curl nor wget found. Install one and re-run."
+    echo "Error: Python venv not found. Run setup-python.sh first."
     exit 1
   fi
-  echo "TripoSR weights downloaded."
+  echo "TripoSR model downloaded."
 else
-  echo "TripoSR weights already present, skipping."
-fi
-
-# ─── Stable Diffusion (optional) ───────────────────────────────────
-if [ "${1:-}" != "--no-sd" ]; then
-  echo ""
-  echo "Stable Diffusion weights will be downloaded on first use"
-  echo "by the Python backend via Hugging Face hub."
-  echo "To pre-download:"
-  echo "  source $PYTHON_DIR/venv/bin/activate"
-  echo "  python -c \"from diffusers import StableDiffusionPipeline; StableDiffusionPipeline.from_pretrained('runwayml/stable-diffusion-v1-5')\""
+  echo "TripoSR model already present, skipping."
 fi
 
 echo ""

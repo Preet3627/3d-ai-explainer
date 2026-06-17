@@ -42,8 +42,9 @@ scripts/        – Setup scripts
 ### Process communication
 - **Renderer ↔ Main:** IPC via contextBridge (preload.ts)
 - **Main ↔ Python:** HTTP to FastAPI on 127.0.0.1:8765
-- **Renderer ↔ Deepgram:** Indirect via Main → Deepgram WebSocket
+- **Main ↔ Deepgram:** WebSocket (`ws` package) to api.deepgram.com, audio chunks via IPC from renderer
 - **Renderer → TTS:** Web Speech API (direct, no IPC needed)
+- **STT flow:** Renderer mic (ScriptProcessorNode) → Int16 PCM @16kHz → IPC chunks → Main (DeepgramClient) → WebSocket → Results back via IPC
 
 ### Testing
 - Vitest for unit tests

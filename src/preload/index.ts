@@ -9,9 +9,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('stt:result', (_event, text) => callback(text)),
   onSTTInterim: (callback: (text: string) => void) =>
     ipcRenderer.on('stt:interim', (_event, text) => callback(text)),
+  onSTTError: (callback: (error: string) => void) =>
+    ipcRenderer.on('stt:error', (_event, error) => callback(error)),
+  onSTTReady: (callback: () => void) =>
+    ipcRenderer.on('stt:ready', () => callback()),
   removeSTTListeners: () => {
     ipcRenderer.removeAllListeners('stt:result');
     ipcRenderer.removeAllListeners('stt:interim');
+    ipcRenderer.removeAllListeners('stt:error');
+    ipcRenderer.removeAllListeners('stt:ready');
   },
 
   // AI Explanation
@@ -23,8 +29,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('model:convert', { imagePath }),
   textToImageTo3D: (prompt: string) =>
     ipcRenderer.invoke('model:text-to-3d', { prompt }),
+  listModels: () =>
+    ipcRenderer.invoke('model:list'),
 
   // Python backend status
+  getPythonStatus: () =>
+    ipcRenderer.invoke('python:status'),
   onPythonStatus: (callback: (status: { running: boolean; busy: boolean; error?: string }) => void) =>
     ipcRenderer.on('python:status', (_event, status) => callback(status)),
 });

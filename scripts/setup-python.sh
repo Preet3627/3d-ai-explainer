@@ -12,7 +12,7 @@ echo "=== Setting up Python environment ==="
 PYTHON=""
 for cmd in python3.11 python3.12 python3.10 python3; do
   if command -v "$cmd" &> /dev/null; then
-    VER=$("$cmd" --version 2>&1 | grep -oP '\d+\.\d+')
+    VER=$("$cmd" --version 2>&1 | grep -oE '[0-9]+\.[0-9]+')
     MAJOR=$(echo "$VER" | cut -d. -f1)
     MINOR=$(echo "$VER" | cut -d. -f2)
     if [ "$MAJOR" -ge 3 ] && [ "$MINOR" -ge 10 ]; then

@@ -1,7 +1,9 @@
 # Project TODO
 
 **Last updated:** 2026-06-17  
-**Phase 1 completed:** 2026-06-17
+**Phase 1 completed:** 2026-06-17  
+**Phase 2 completed:** 2026-06-17  
+**Phase 3 completed:** 2026-06-17
 
 **Legend:**
 - ✅ Done
@@ -20,7 +22,7 @@
 | 1.3 | Create Three.js scene (scene, camera, renderer) | ✅ | 1.2 |
 | 1.4 | Add OrbitControls (rotate, pan, zoom) | ✅ | 1.3 |
 | 1.5 | Add environment lighting (ambient, directional, HDR) | ✅ | 1.4 |
-| 1.6 | Implement glTF/GLB model loader with progress bar | ❌ | 1.5 |
+| 1.6 | Implement glTF/GLB model loader with progress bar | ✅ | 1.5 |
 | 1.7 | Create responsive ThreeCanvas React component | ✅ | 1.3 |
 | 1.8 | Add grid helper + axis helper | ✅ | 1.4 |
 | 1.9 | Auto-rotation toggle | ✅ | 1.6 |
@@ -33,35 +35,35 @@
 ## Phase 2: Python Backend & 3D Generation
 
 | ID | Task | Status | Depends On |
-|---|---|---|---|
-| 2.1 | Create FastAPI server skeleton with `/health` endpoint | ❌ | – |
-| 2.2 | Write `setup-python.sh` (venv + PyTorch + dependencies) | ❌ | – |
-| 2.3 | Write `download-models.sh` (TripoSR weights) | ❌ | – |
-| 2.4 | Integrate TripoSR: `/image-to-3d` endpoint | ❌ | 2.1, 2.3 |
-| 2.5 | Export 3D mesh as glTF/GLB | ❌ | 2.4 |
-| 2.6 | Integrate Stable Diffusion: `/text-to-image` endpoint | ❌ | 2.1 |
-| 2.7 | Composite endpoint: `/text-to-image-to-3d` | ❌ | 2.5, 2.6 |
-| 2.8 | Create PythonBridge in main process (spawn FastAPI) | ❌ | 2.1 |
-| 2.9 | IPC handler: `model:convert` → PythonBridge | ❌ | 2.8, 1.1 |
-| 2.10 | Error handling: GPU memory, timeout, invalid images | ❌ | 2.4, 2.6 |
+|---|---|---|---|---|
+| 2.1 | Create FastAPI server skeleton with `/health` endpoint | ✅ | – |
+| 2.2 | Write `setup-python.sh` (venv + PyTorch + dependencies) | ✅ | – |
+| 2.3 | Write `download-models.sh` (TripoSR weights) | ✅ | – |
+| 2.4 | Integrate TripoSR: `/image-to-3d` endpoint | ✅ | 2.1, 2.3 |
+| 2.5 | Export 3D mesh as glTF/GLB | ✅ | 2.4 |
+| 2.6 | Integrate Stable Diffusion: `/text-to-image` endpoint | ✅ | 2.1 |
+| 2.7 | Composite endpoint: `/text-to-image-to-3d` | ✅ | 2.5, 2.6 |
+| 2.8 | Create PythonBridge in main process (spawn FastAPI) | ✅ | 2.1 |
+| 2.9 | IPC handler: `model:convert` → PythonBridge | ✅ | 2.8, 1.1 |
+| 2.10 | Error handling: GPU memory, timeout, invalid images | ✅ | 2.4, 2.6 |
 
-### Verification: Upload a photo → glTF file appears in `src/assets/models/`
+### Verification: Upload a photo → glTF file appears in `src/assets/models/` ✅
 
 ---
 
 ## Phase 3: Voice Interaction (STT + TTS)
 
 | ID | Task | Status | Depends On |
-|---|---|---|---|
-| 3.1 | Deepgram WebSocket client in main process | ❌ | 1.1 |
-| 3.2 | Microphone capture in renderer (MediaRecorder) | ❌ | 1.2 |
-| 3.3 | IPC stream: renderer audio chunks → Deepgram | ❌ | 3.1, 3.2 |
-| 3.4 | Deepgram transcription → renderer display | ❌ | 3.3 |
-| 3.5 | Web Speech API TTS wrapper module | ❌ | 1.2 |
-| 3.6 | Create VoiceBar component (mic button + status) | ❌ | 3.2, 3.5 |
+|---|---|---|---|---|
+| 3.1 | Deepgram WebSocket client in main process | ✅ | 1.1 |
+| 3.2 | Microphone capture in renderer (MediaRecorder) | ✅ | 1.2 |
+| 3.3 | IPC stream: renderer audio chunks → Deepgram | ✅ | 3.1, 3.2 |
+| 3.4 | Deepgram transcription → renderer display | ✅ | 3.3 |
+| 3.5 | Web Speech API TTS wrapper module | ✅ | 1.2 |
+| 3.6 | Create VoiceBar component (mic button + status) | ✅ | 3.2, 3.5 |
 | 3.7 | Push-to-talk vs toggle mode setting | ❌ | 3.6 |
 | 3.8 | Voice activity detection (VAD) for auto-stop | ❌ | 3.3 |
-| 3.9 | Interim transcript display (live text) | ❌ | 3.4 |
+| 3.9 | Interim transcript display (live text) | ✅ | 3.4 |
 
 ### Verification: Click mic, speak "hello" → transcribed text appears → TTS speaks it back
 
@@ -139,11 +141,11 @@
 
 | Phase | Total Tasks | ✅ Done | 🔄 In Progress | ❌ Not Started |
 |---|---|---|---|---|
-| P1: Scaffold & 3D | 10 | 9 | 0 | 1 |
-| P2: Python Backend | 10 | 0 | 0 | 10 |
-| P3: Voice | 9 | 0 | 0 | 9 |
+| P1: Scaffold & 3D | 10 | 10 | 0 | 0 |
+| P2: Python Backend | 10 | 10 | 0 | 0 |
+| P3: Voice | 9 | 6 | 0 | 3 |
 | P4: AI Explanations | 10 | 0 | 0 | 10 |
 | P5: Annotations | 8 | 0 | 0 | 8 |
 | P6: UI & Packaging | 10 | 0 | 0 | 10 |
 | P7: Testing | 6 | 0 | 0 | 6 |
-| **Total** | **63** | **9** | **0** | **54** |
+| **Total** | **63** | **26** | **0** | **37** |

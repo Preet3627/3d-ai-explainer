@@ -1,5 +1,6 @@
 node_modules/
 dist/
+out/
 .env
 *.env.local
 uploads/
@@ -9,6 +10,8 @@ python-backend/__pycache__/
 python-backend/venv/
 python-backend/models/*.pt
 python-backend/models/*.pth
+python-backend/models/*.ckpt
+python-backend/triposr/
 *.log
 .DS_Store
 Thumbs.db

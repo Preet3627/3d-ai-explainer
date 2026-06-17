@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { applyModelToScene } from './modelLoader';
 
 class SceneManager {
   private scene: THREE.Scene;
@@ -8,9 +9,15 @@ class SceneManager {
   private controls: OrbitControls;
   private animationId: number;
   private container: HTMLElement;
+  private resizeObserver: ResizeObserver;
+  private cube: THREE.Mesh | null = null;
+  private startTime: number;
+  private objects: THREE.Object3D[] = [];
+  private modelLoadCallbacks: Array<(path: string) => void> = [];
 
   constructor(container: HTMLElement) {
     this.container = container;
+    this.startTime = Date.now();
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x0a0a0f);
@@ -41,8 +48,8 @@ class SceneManager {
     this.setupHelpers();
     this.addPlaceholderCube();
 
-    const resizeObserver = new ResizeObserver(() => this.onResize());
-    resizeObserver.observe(container);
+    this.resizeObserver = new ResizeObserver(() => this.onResize());
+    this.resizeObserver.observe(container);
 
     this.animationId = requestAnimationFrame(() => this.animate());
   }
@@ -50,30 +57,39 @@ class SceneManager {
   private setupLighting(): void {
     const ambient = new THREE.AmbientLight(0x404060, 0.5);
     this.scene.add(ambient);
+    this.objects.push(ambient);
 
     const hemisphere = new THREE.HemisphereLight(0x87ceeb, 0x362d59, 0.6);
     this.scene.add(hemisphere);
+    this.objects.push(hemisphere);
 
     const main = new THREE.DirectionalLight(0xffeedd, 2.0);
     main.position.set(5, 8, 5);
     main.castShadow = true;
     this.scene.add(main);
+    this.objects.push(main);
 
     const fill = new THREE.DirectionalLight(0x4488ff, 0.4);
     fill.position.set(-3, 1, -4);
     this.scene.add(fill);
+    this.objects.push(fill);
 
     const rim = new THREE.DirectionalLight(0xffffff, 0.3);
     rim.position.set(0, -2, 5);
     this.scene.add(rim);
+    this.objects.push(rim);
   }
 
   private setupHelpers(): void {
     const grid = new THREE.GridHelper(10, 20, 0x444466, 0x222244);
     grid.position.y = -0.5;
     this.scene.add(grid);
+    this.objects.push(grid);
 
-    // Subtle ambient particles for atmosphere
+    const axes = new THREE.AxesHelper(2);
+    this.scene.add(axes);
+    this.objects.push(axes);
+
     const particleCount = 500;
     const positions = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount * 3; i++) {
@@ -84,6 +100,7 @@ class SceneManager {
       new THREE.PointsMaterial({ color: 0x444466, size: 0.02, transparent: true, opacity: 0.6 }),
     );
     this.scene.add(particles);
+    this.objects.push(particles);
   }
 
   private addPlaceholderCube(): void {
@@ -98,32 +115,26 @@ class SceneManager {
     cube.castShadow = true;
     cube.receiveShadow = true;
     this.scene.add(cube);
+    this.cube = cube;
+    this.objects.push(cube);
 
-    // Wireframe overlay
     const edges = new THREE.EdgesGeometry(geometry);
     const wireframe = new THREE.LineSegments(
       edges,
       new THREE.LineBasicMaterial({ color: 0x8888ff, transparent: true, opacity: 0.3 }),
     );
     cube.add(wireframe);
+  }
 
-    // Animate the cube as a demo
-    const startTime = Date.now();
-    const originalAnimate = this.animate.bind(this);
-    const cubeAnim = () => {
-      const elapsed = (Date.now() - startTime) / 1000;
-      cube.position.y = Math.sin(elapsed * 0.8) * 0.15;
-    };
-
-    // Monkey-patch animate loop to add cube animation
-    const loop = this.animate.bind(this);
-    this.animate = () => {
-      cubeAnim();
-      loop();
-    };
+  private update(): void {
+    if (this.cube) {
+      const elapsed = (Date.now() - this.startTime) / 1000;
+      this.cube.position.y = Math.sin(elapsed * 0.8) * 0.15;
+    }
   }
 
   private animate(): void {
+    this.update();
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
     this.animationId = requestAnimationFrame(() => this.animate());
@@ -137,10 +148,36 @@ class SceneManager {
     this.renderer.setSize(width, height);
   }
 
+  onModelLoaded(cb: (path: string) => void): void {
+    this.modelLoadCallbacks.push(cb);
+  }
+
+  async loadModel(path: string, onProgress?: (ratio: number) => void): Promise<void> {
+    if (this.cube) {
+      this.scene.remove(this.cube);
+      this.cube.geometry.dispose();
+      (this.cube.material as THREE.Material).dispose();
+      this.cube = null;
+    }
+    this.controls.autoRotate = true;
+    await applyModelToScene(path, this.scene, onProgress);
+    this.modelLoadCallbacks.forEach((cb) => cb(path));
+  }
+
   dispose(): void {
     cancelAnimationFrame(this.animationId);
-    this.renderer.dispose();
+    this.resizeObserver.disconnect();
     this.controls.dispose();
+    this.renderer.dispose();
+    for (const obj of this.objects) {
+      this.scene.remove(obj);
+      if ('geometry' in obj && obj.geometry instanceof THREE.BufferGeometry) {
+        obj.geometry.dispose();
+      }
+      if ('material' in obj && obj.material instanceof THREE.Material) {
+        obj.material.dispose();
+      }
+    }
     if (this.renderer.domElement.parentElement) {
       this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);
     }
