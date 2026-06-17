@@ -166,6 +166,11 @@ npm run python:server   # Terminal 1: Python backend on :8765
 npm run dev             # Terminal 2: Electron app with HMR
 ```
 
+> **macOS only:** If macOS blocks the app after first install (unverified developer), run:
+> ```bash
+> sudo xattr -rd com.apple.quarantine /Applications/3D\ AI\ Explainer.app
+> ```
+
 ### Prerequisites
 
 | Dependency | Required | For |
