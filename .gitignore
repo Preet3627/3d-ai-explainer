@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+*.env.local
+uploads/
+src/assets/models/*.glb
+src/assets/models/*.gltf
+python-backend/__pycache__/
+python-backend/venv/
+python-backend/models/*.pt
+python-backend/models/*.pth
+*.log
+.DS_Store
+Thumbs.db
