@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { app } from 'electron';
 
 interface ModelInfo {
   id: string;
@@ -13,10 +14,10 @@ class ModelManager {
   private modelsDir: string;
   private uploadsDir: string;
 
-  constructor(modelsDir?: string, uploadsDir?: string) {
-    const base = path.join(__dirname, '../..');
-    this.modelsDir = modelsDir || path.join(base, 'src/assets/models');
-    this.uploadsDir = uploadsDir || path.join(base, 'uploads');
+  constructor() {
+    const userDataPath = app.getPath('userData');
+    this.modelsDir = path.join(userDataPath, 'models');
+    this.uploadsDir = path.join(userDataPath, 'uploads');
     fs.mkdirSync(this.modelsDir, { recursive: true });
     fs.mkdirSync(this.uploadsDir, { recursive: true });
   }
