@@ -14,6 +14,8 @@ function AppContent() {
   const [loadProgress, setLoadProgress] = useState<number | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [promptText, setPromptText] = useState('');
 
   useEffect(() => {
     window.electronAPI.getPythonStatus().then((s) => setPythonRunning(s.running));
@@ -76,8 +78,7 @@ function AppContent() {
     input.click();
   }, []);
 
-  const handlePrompt = useCallback(async () => {
-    const prompt = window.prompt('Describe the 3D object you want:');
+  const handlePrompt = useCallback(async (prompt: string) => {
     if (!prompt) return;
 
     setStatus(`Generating "${prompt}"...`);
@@ -138,8 +139,8 @@ function AppContent() {
         {status === 'Ready' && !loadProgress && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-center">
-              <svg className="w-12 h-12 mx-auto mb-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+              <svg className="w-12 h-12 mx-auto mb-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
               </svg>
               <p className="text-gray-600 text-sm">Drop a .glb or .gltf file here</p>
               <p className="text-gray-700 text-xs mt-1">or use the buttons below to generate a 3D model</p>
@@ -159,7 +160,7 @@ function AppContent() {
             </span>
           </button>
           <button
-            onClick={handlePrompt}
+            onClick={() => { setPromptText(''); setShowPrompt(true); }}
             className="px-3 py-1.5 bg-emerald-600/90 hover:bg-emerald-500 text-white text-xs rounded-lg transition-all shadow-lg shadow-emerald-600/20 hover:shadow-emerald-500/30"
           >
             <span className="flex items-center gap-1.5">
@@ -171,6 +172,40 @@ function AppContent() {
           </button>
         </div>
         <VoiceBar onTranscriptFinal={handleVoiceTranscript} />
+
+        {showPrompt && (
+          <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/50">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 p-5 shadow-2xl w-96">
+              <h3 className="text-gray-200 text-sm font-medium mb-3">Describe your 3D object</h3>
+              <input
+                type="text"
+                value={promptText}
+                onChange={(e) => setPromptText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const text = promptText.trim();
+                    setShowPrompt(false);
+                    handlePrompt(text);
+                  }
+                  if (e.key === 'Escape') setShowPrompt(false);
+                }}
+                placeholder="e.g. a red sports car"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-indigo-500 mb-3"
+                autoFocus
+              />
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setShowPrompt(false)} className="px-3 py-1.5 text-xs text-gray-400 hover:text-gray-200 transition-colors">Cancel</button>
+                <button
+                  onClick={() => { const text = promptText.trim(); setShowPrompt(false); handlePrompt(text); }}
+                  disabled={!promptText.trim()}
+                  className="px-4 py-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-md transition-colors"
+                >
+                  Generate
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
       {showSetup && <SetupGuide onClose={() => setShowSetup(false)} />}
