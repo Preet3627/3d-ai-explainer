@@ -1,7 +1,10 @@
 {
   "name": "3d-ai-explainer",
-  "version": "0.1.0",
-  "author": "Latestinssan",
+  "version": "0.1.1",
+  "author": {
+    "name": "Latestinssan",
+    "email": "preetjgfilj2@gmail.com"
+  },
   "description": "Desktop app: 3D visualization with AI voice explanations. 2D image to 3D model generation with real-time voice interaction.",
   "main": "./out/main/index.js",
   "scripts": {
