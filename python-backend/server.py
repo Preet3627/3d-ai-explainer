@@ -43,7 +43,12 @@ class TextTo3DRequest(BaseModel):
 def _image_to_3d(image_path: str, output_path: Path) -> str:
     from triposr_worker import load_model, image_to_3d
     load_model()
-    img = Image.open(image_path).convert("RGB")
+    try:
+        img = Image.open(image_path).convert("RGB")
+    except Exception as e:
+        raise HTTPException(400, f"Failed to open image: {e}")
+    if img.width < 10 or img.height < 10:
+        raise HTTPException(400, f"Image too small ({img.width}x{img.height})")
     return image_to_3d(img, str(output_path))
 
 

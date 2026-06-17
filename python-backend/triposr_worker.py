@@ -73,6 +73,19 @@ def _use_dummy(reason: str) -> bool:
     return True
 
 
+def _validate_image(img: Image.Image) -> Image.Image:
+    """Ensure image has valid dimensions and content."""
+    if img.width < 10 or img.height < 10:
+        logger.warning(f"Image too small ({img.width}x{img.height}), generating dummy mesh")
+        return None
+    img = img.convert("RGBA")
+    arr = np.array(img)
+    if arr[:, :, 3].sum() == 0:
+        logger.warning("Image is fully transparent, generating dummy mesh")
+        return None
+    return img
+
+
 def image_to_3d(image: Image.Image, output_path: str | Path) -> str:
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -87,25 +100,45 @@ def image_to_3d(image: Image.Image, output_path: str | Path) -> str:
 
     device = get_device()
 
+    input_img = None
+
     try:
         import rembg
         from tsr.utils import remove_background, resize_foreground
         rembg_session = rembg.new_session()
         processed = remove_background(image, rembg_session)
         processed = resize_foreground(processed, 0.85)
+        processed = _validate_image(processed)
+        if processed is None:
+            return _generate_dummy_mesh(output_path)
         arr = np.array(processed).astype(np.float32) / 255.0
         arr = arr[:, :, :3] * arr[:, :, 3:4] + (1 - arr[:, :, 3:4]) * 0.5
         input_img = Image.fromarray((arr * 255.0).astype(np.uint8))
     except Exception as e:
         logger.warning(f"Background removal failed, using raw image: {e}")
-        input_img = image.resize((512, 512))
+        raw = image.resize((512, 512))
+        raw = _validate_image(raw)
+        if raw is None:
+            return _generate_dummy_mesh(output_path)
+        input_img = raw.convert("RGB")
 
-    logger.info("Running TripoSR inference...")
-    with torch.no_grad():
-        scene_codes = _model([input_img], device=device)
+    if input_img is None:
+        return _generate_dummy_mesh(output_path)
+
+    logger.info(f"Running TripoSR inference on {input_img.width}x{input_img.height} image...")
+    try:
+        with torch.no_grad():
+            scene_codes = _model([input_img], device=device)
+    except Exception as e:
+        logger.exception("TripoSR inference failed")
+        return _generate_dummy_mesh(output_path)
 
     logger.info("Extracting mesh...")
-    meshes = _model.extract_mesh(scene_codes, True, resolution=256)
+    try:
+        meshes = _model.extract_mesh(scene_codes, True, resolution=256)
+    except Exception as e:
+        logger.exception("Mesh extraction failed")
+        return _generate_dummy_mesh(output_path)
 
     logger.info(f"Exporting GLB to {output_path}...")
     meshes[0].export(str(output_path))
