@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSettings } from '../context/SettingsContext';
 import { LLMProvider, PROVIDER_LABELS, AppSettings } from '../../../types/settings';
 
@@ -14,6 +14,9 @@ function SettingsPanel({ onClose }: SettingsPanelProps) {
   const { settings, updateSettings } = useSettings();
   const [tab, setTab] = useState<Tab>('api-keys');
   const [draft, setDraft] = useState<AppSettings>({ ...settings });
+  const [ollamaModels, setOllamaModels] = useState<string[]>([]);
+  const [fetchingModels, setFetchingModels] = useState(false);
+  const [ollamaError, setOllamaError] = useState('');
 
   const handleSave = async () => {
     await updateSettings(draft);
@@ -27,6 +30,35 @@ function SettingsPanel({ onClose }: SettingsPanelProps) {
   const updateProviderCfg = (provider: LLMProvider, field: string, value: string) => {
     setDraft({ ...draft, [provider]: { ...draft[provider], [field]: value } });
   };
+
+  const refreshOllamaModels = useCallback(async () => {
+    setFetchingModels(true);
+    setOllamaError('');
+    try {
+      const result = await window.electronAPI.listOllamaModels();
+      if (result.success) {
+        setOllamaModels(result.models);
+        if (result.models.length === 0) {
+          setOllamaError('No models found — pull one in Ollama first');
+        }
+      } else {
+        setOllamaError(result.error || 'Failed to connect');
+      }
+    } catch (err) {
+      setOllamaError((err as Error).message);
+    }
+    setFetchingModels(false);
+  }, []);
+
+  const prevProviderRef = useRef(draft.provider);
+  useEffect(() => {
+    if (prevProviderRef.current !== draft.provider) {
+      prevProviderRef.current = draft.provider;
+      if (draft.provider === 'ollama') {
+        refreshOllamaModels();
+      }
+    }
+  }, [draft.provider, refreshOllamaModels]);
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'api-keys', label: 'API Keys' },
@@ -90,28 +122,56 @@ function SettingsPanel({ onClose }: SettingsPanelProps) {
               </Section>
 
               <Section label="Model">
-                <InputField
-                  label="Model Name"
-                  value={draft[draft.provider].model}
-                  onChange={(v) => updateProviderCfg(draft.provider, 'model', v)}
-                  placeholder={draft.provider === 'ollama' ? 'llama3.2' : 'gpt-4o'}
-                />
-                {draft.provider !== 'ollama' && (
-                  <InputField
-                    label="API Key"
-                    value={draft[draft.provider].apiKey}
-                    onChange={(v) => updateProviderCfg(draft.provider, 'apiKey', v)}
-                    placeholder="API Key"
-                    password
-                  />
-                )}
-                {draft.provider === 'ollama' && (
-                  <InputField
-                    label="Base URL"
-                    value={draft.ollama.baseUrl}
-                    onChange={(v) => updateProviderCfg('ollama', 'baseUrl', v)}
-                    placeholder="http://127.0.0.1:11434"
-                  />
+                {draft.provider === 'ollama' ? (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <select
+                        value={draft.ollama.model}
+                        onChange={(e) => updateProviderCfg('ollama', 'model', e.target.value)}
+                        className="flex-1 bg-gray-800 border border-gray-700 rounded-md px-3 py-1.5 text-gray-200 text-xs focus:outline-none focus:border-indigo-500"
+                      >
+                        {ollamaModels.length === 0 && (
+                          <option value={draft.ollama.model}>{draft.ollama.model}</option>
+                        )}
+                        {ollamaModels.map((m) => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={refreshOllamaModels}
+                        disabled={fetchingModels}
+                        className="px-2 py-1.5 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-gray-300 text-xs rounded-md transition-colors"
+                        title="Refresh models"
+                      >
+                        {fetchingModels ? '...' : '↻'}
+                      </button>
+                    </div>
+                    {ollamaError && (
+                      <p className="text-red-400 text-xs">{ollamaError}</p>
+                    )}
+                    <InputField
+                      label="Base URL"
+                      value={draft.ollama.baseUrl}
+                      onChange={(v) => updateProviderCfg('ollama', 'baseUrl', v)}
+                      placeholder="http://127.0.0.1:11434"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <InputField
+                      label="Model Name"
+                      value={draft[draft.provider].model}
+                      onChange={(v) => updateProviderCfg(draft.provider, 'model', v)}
+                      placeholder="gpt-4o"
+                    />
+                    <InputField
+                      label="API Key"
+                      value={draft[draft.provider].apiKey}
+                      onChange={(v) => updateProviderCfg(draft.provider, 'apiKey', v)}
+                      placeholder="API Key"
+                      password
+                    />
+                  </>
                 )}
               </Section>
 

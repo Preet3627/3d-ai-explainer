@@ -1,4 +1,6 @@
 import { generateText } from 'ai';
+import https from 'https';
+import http from 'http';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
@@ -158,4 +160,24 @@ async function routeToProvider(
     default:
       throw new Error(`Unknown provider: ${provider}`);
   }
+}
+
+export async function listOllamaModels(baseUrl: string): Promise<string[]> {
+  return new Promise((resolve, reject) => {
+    const url = new URL(`${baseUrl}/api/tags`);
+    const fetcher = url.protocol === 'https:' ? https : http;
+    fetcher.get(url.href, (res) => {
+      let data = '';
+      res.on('data', (chunk) => (data += chunk));
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          const models = (parsed.models || []).map((m: { name: string }) => m.name);
+          resolve(models);
+        } catch (err) {
+          reject(new Error(`Failed to parse Ollama models: ${(err as Error).message}`));
+        }
+      });
+    }).on('error', reject);
+  });
 }

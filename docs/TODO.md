@@ -5,6 +5,7 @@
 **Phase 2 completed:** 2026-06-17  
 **Phase 3 completed:** 2026-06-17
 **Phase 4 completed:** 2026-06-17
+**Phase 5 completed:** 2026-06-17
 
 **Legend:**
 - ✅ Done
@@ -93,12 +94,12 @@
 
 | ID | Task | Status | Depends On |
 |---|---|---|---|
-| 5.1 | AnnotationSystem class (labels + highlight) | ❌ | 1.3, 1.6 |
-| 5.2 | Object highlighting via outline shader | ❌ | 5.1 |
-| 5.3 | Spotlight animation on highlighted object | ❌ | 5.2 |
-| 5.4 | CSS2D label sprites (floating text in 3D) | ❌ | 5.1 |
-| 5.5 | Wire explanation ↔ annotation linkage | ❌ | 5.1, 4.1 |
-| 5.6 | Model auto-rotation with pause-on-interact | ❌ | 1.9 |
+| 5.1 | AnnotationSystem class (labels + highlight) | ✅ | 1.3, 1.6 |
+| 5.2 | Object highlighting via emissive glow pulse | ✅ | 5.1 |
+| 5.3 | Spotlight animation on highlighted object | ✅ | 5.2 |
+| 5.4 | Canvas sprite labels (floating text in 3D) | ✅ | 5.1 |
+| 5.5 | Wire explanation ↔ annotation linkage | ✅ | 5.1, 4.1 |
+| 5.6 | Model auto-rotation with pause-on-interact | ✅ | 1.9 |
 | 5.7 | Smooth camera transitions (focus on object) | ❌ | 1.4 |
 | 5.8 | Loading screen / splash animation | ❌ | 1.2 |
 
@@ -146,7 +147,7 @@
 | P2: Python Backend | 10 | 10 | 0 | 0 |
 | P3: Voice | 9 | 6 | 0 | 3 |
 | P4: AI Explanations | 10 | 10 | 0 | 0 |
-| P5: Annotations | 8 | 0 | 0 | 8 |
+| P5: Annotations | 8 | 6 | 0 | 2 |
 | P6: UI & Packaging | 10 | 0 | 0 | 10 |
 | P7: Testing | 6 | 0 | 0 | 6 |
-| **Total** | **63** | **36** | **0** | **27** |
+| **Total** | **63** | **42** | **0** | **21** |

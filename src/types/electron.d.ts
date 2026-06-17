@@ -29,6 +29,7 @@ interface ElectronAPI {
   listModels: () => Promise<ModelInfo[]>;
   getPythonStatus: () => Promise<PythonStatus>;
   onPythonStatus: (callback: (status: PythonStatus) => void) => void;
+  listOllamaModels: () => Promise<{ success: boolean; models: string[]; error?: string }>;
 }
 
 interface File {

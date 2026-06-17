@@ -43,4 +43,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('python:status'),
   onPythonStatus: (callback: (status: { running: boolean; busy: boolean; error?: string }) => void) =>
     ipcRenderer.on('python:status', (_event, status) => callback(status)),
+
+  // Ollama model listing
+  listOllamaModels: () =>
+    ipcRenderer.invoke('ollama:list-models'),
 });

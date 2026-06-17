@@ -5,7 +5,7 @@ import PythonBridge from './pythonBridge';
 import ModelManager from './modelManager';
 import DeepgramClient from './deepgramClient';
 import SettingsStore from './settingsStore';
-import { generateAIResponse } from './aiProvider';
+import { generateAIResponse, listOllamaModels } from './aiProvider';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -72,7 +72,15 @@ ipcMain.handle('python:status', async () => {
   return { running: pythonBridge.isRunning };
 });
 
-// ─── STT (Speech-To-Text) IPC ──────────────────────────────────────
+ipcMain.handle('ollama:list-models', async () => {
+  const baseUrl = settingsStore.get('ollama').baseUrl || 'http://127.0.0.1:11434';
+  try {
+    const models = await listOllamaModels(baseUrl);
+    return { success: true, models };
+  } catch (err) {
+    return { success: false, error: (err as Error).message, models: [] };
+  }
+});
 
 // ─── Settings IPC ──────────────────────────────────────────────────
 
